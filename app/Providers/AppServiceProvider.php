@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->configurePassport();
+    }
+
+    /**
+     * Configure Passport with security best practices.
+     */
+    protected function configurePassport(): void
+    {
+        // Custom authorization view
+        Passport::authorizationView(fn (array $parameters) => Inertia::render('OAuth/Authorize', $parameters));
+
+        // Token expiration - shorter tokens are more secure
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
+        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
     }
 }
